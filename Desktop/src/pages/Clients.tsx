@@ -1,28 +1,46 @@
-import { faker } from "@faker-js/faker";
-import React, { useState } from "react";
-
-const initialDatas = Array.from({ length: 500 }, () => ({
-  id: faker.string.uuid(),
-  name: faker.person.fullName(),
-  email: faker.internet.email(),
-}));
+import React, { useEffect, useState } from "react";
+import type { ClientsProps } from "../utils/Interfaces";
+import { rootUrl } from "../utils/Routes";
 
 function Clients() {
-  const [datas, setDatas] = useState(initialDatas);
+  const [datas, setDatas] = useState<ClientsProps[]>([]);
+  const [initialDatas, setInitialDatas] = useState<ClientsProps[]>([]);
 
   const [search, setSearch] = useState("");
-  const [searchOptions, setSearchOptions] = useState("name");
+  const [searchOptions, setSearchOptions] = useState("id");
+
+  useEffect(() => {
+    (async () => {
+      const response = await fetch(rootUrl);
+      const data = (await response.json()) as ClientsProps[];
+      setInitialDatas(data);
+      setDatas(data);
+    })();
+  }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (search === "") setDatas(initialDatas);
+    if (!e.target.value) {
+      setDatas(initialDatas);
+      setSearch("");
+      return;
+    }
+
     setSearch(e.target.value);
-    setDatas(
+    setDatas(() =>
       initialDatas.filter((data) =>
-        searchOptions === "name"
-          ? data.name.toLowerCase().includes(e.target.value.toLowerCase())
-          : searchOptions === "id"
-            ? data.id.toLowerCase().includes(e.target.value.toLowerCase())
-            : data.email.toLowerCase().includes(e.target.value.toLowerCase())
+        searchOptions === "nom"
+          ? data.nom.toLowerCase().includes(e.target.value.toLowerCase())
+          : searchOptions === "prenom"
+            ? data.prenom.toLowerCase().includes(e.target.value.toLowerCase())
+            : searchOptions === "id"
+              ? data.id_client === Number(e.target.value)
+              : searchOptions === "adresse"
+                ? data.adresse
+                    .toLowerCase()
+                    .includes(e.target.value.toLowerCase())
+                : data.contact
+                    .toLowerCase()
+                    .includes(e.target.value.toLowerCase())
       )
     );
   };
@@ -36,9 +54,11 @@ function Clients() {
           value={searchOptions}
           onChange={(e) => setSearchOptions(e.target.value)}
         >
-          <option value="name">Nom</option>
-          <option value="id">UUID</option>
-          <option value="email">E-mail</option>
+          <option value="id">Identifiant</option>
+          <option value="nom">Nom</option>
+          <option value="prenom">Prénoms</option>
+          <option value="contact">Contact</option>
+          <option value="adresse">Adresse</option>
         </select>
       </div>
       <input
@@ -48,29 +68,35 @@ function Clients() {
         value={search}
         onChange={handleChange}
       />
-      <div className="grid grid-cols-3 text-white font-bold mb-7 border-b-2 p-4 bg-gray-400/10 rounded-t-xl">
-        <div className="col-span-1 text-center">UUID</div>
-        <div className="col-span-1 text-center">Nom</div>
-        <div className="col-span-1 text-center">E-mail</div>
+      <div className="grid grid-cols-5 gap-12 text-white font-bold mb-7 border-b-2 p-4 bg-gray-400/10 rounded-t-xl">
+        <div className="col-span-1 text-center">Identifiant</div>
+        <div className="col-span-2 text-center">Nom et prénoms</div>
+        <div className="col-span-1 text-center">Adresse</div>
+        <div className="col-span-1 text-center">Contact</div>
       </div>
-      <div className="text-white">
-        {datas.length} {datas.length > 1 ? "Résultats" : "Résultat"}
-      </div>
-      <div className="text-white overflow-auto h-[65vh] scrollbar-custom">
+
+      <div className="text-white overflow-auto h-[50vh] scrollbar-custom">
         {datas[0] ? (
           datas.map((data) => (
             <div
-              className="col-span-3 grid grid-cols-3 gap-12 hover:bg-blue-400/20 transition-colors duration-300 py-5"
-              key={data.id}
+              className="grid grid-cols-5 gap-12 hover:bg-blue-400/20 transition-colors duration-300 py-5"
+              key={data.id_client}
             >
-              <div className="col-span-1">{data.id}</div>
-              <div className="col-span-1">{data.name}</div>
-              <div className="col-span-1">{data.email}</div>
+              <div className="col-span-1 text-center">{data.id_client}</div>
+              <div className="col-span-2 text-center">
+                {data.nom} {data.prenom}
+              </div>
+              <div className="col-span-1 text-center">{data.adresse}</div>
+              <div className="col-span-1 text-center">{data.contact}</div>
             </div>
           ))
         ) : (
           <div className="col-span-3 text-center">Aucun résultat.</div>
         )}
+      </div>
+      <div className="text-white text-center bg-gray-100/10">
+        {datas.length > 0 ? `${datas.length} ` : ""}
+        {datas.length > 1 ? "Résultats" : datas.length === 1 ? "Résultat" : ""}
       </div>
     </React.Fragment>
   );

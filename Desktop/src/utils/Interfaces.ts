@@ -3,5 +3,5 @@ export interface ClientsProps {
   nom: string;
   prenom: string;
   adresse: string;
-  contact: string;
+  email: string;
 }

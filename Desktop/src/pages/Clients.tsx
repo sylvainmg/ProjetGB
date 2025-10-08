@@ -29,18 +29,19 @@ function Clients() {
     setDatas(() =>
       initialDatas.filter((data) =>
         searchOptions === "nom"
-          ? data.nom.toLowerCase().includes(e.target.value.toLowerCase())
-          : searchOptions === "prenom"
-            ? data.prenom.toLowerCase().includes(e.target.value.toLowerCase())
-            : searchOptions === "id"
-              ? data.id_client === Number(e.target.value)
-              : searchOptions === "adresse"
-                ? data.adresse
-                    .toLowerCase()
-                    .includes(e.target.value.toLowerCase())
-                : data.contact
-                    .toLowerCase()
-                    .includes(e.target.value.toLowerCase())
+          ? (() => {
+              const fullName = data.nom + " " + data.prenom;
+              return fullName
+                .toLowerCase()
+                .includes(e.target.value.toLowerCase());
+            })()
+          : searchOptions === "id"
+            ? String(data.id_client).includes(e.target.value)
+            : searchOptions === "adresse"
+              ? data.adresse
+                  .toLowerCase()
+                  .includes(e.target.value.toLowerCase())
+              : data.email.toLowerCase().includes(e.target.value.toLowerCase())
       )
     );
   };
@@ -55,10 +56,9 @@ function Clients() {
           onChange={(e) => setSearchOptions(e.target.value)}
         >
           <option value="id">Identifiant</option>
-          <option value="nom">Nom</option>
-          <option value="prenom">Prénoms</option>
-          <option value="contact">Contact</option>
+          <option value="nom">Nom et prénoms</option>
           <option value="adresse">Adresse</option>
+          <option value="email">E-mail</option>
         </select>
       </div>
       <input
@@ -72,22 +72,28 @@ function Clients() {
         <div className="col-span-1 text-center">Identifiant</div>
         <div className="col-span-2 text-center">Nom et prénoms</div>
         <div className="col-span-1 text-center">Adresse</div>
-        <div className="col-span-1 text-center">Contact</div>
+        <div className="col-span-1 text-center">E-mail</div>
       </div>
 
-      <div className="text-white overflow-auto h-[50vh] scrollbar-custom">
+      <div className="text-white text-sm overflow-auto h-[50vh] no-scrollbar">
         {datas[0] ? (
           datas.map((data) => (
             <div
               className="grid grid-cols-5 gap-12 hover:bg-blue-400/20 transition-colors duration-300 py-5"
               key={data.id_client}
             >
-              <div className="col-span-1 text-center">{data.id_client}</div>
-              <div className="col-span-2 text-center">
+              <div className="col-span-1 text-center break-all">
+                {data.id_client}
+              </div>
+              <div className="col-span-2 text-center break-all">
                 {data.nom} {data.prenom}
               </div>
-              <div className="col-span-1 text-center">{data.adresse}</div>
-              <div className="col-span-1 text-center">{data.contact}</div>
+              <div className="col-span-1 text-center break-all">
+                {data.adresse}
+              </div>
+              <div className="col-span-1 text-center break-all">
+                {data.email}
+              </div>
             </div>
           ))
         ) : (
